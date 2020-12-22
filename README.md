@@ -3,4 +3,4 @@
 
 -------
 
-[[ shell ] 获取局域网内空闲IP](https://github.com/weiyingjie/mytools/blob/main/get_free_ip.sh)
+- [[ shell ] 获取局域网内空闲IP](https://github.com/weiyingjie/mytools/blob/main/get_free_ip.sh)
