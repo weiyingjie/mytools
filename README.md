@@ -8,3 +8,4 @@
   - 使用方法: 将文件拖到U盘双击运行
 - [[ Linux ] samba通用配置文件](https://github.com/weiyingjie/mytools/blob/main/smb.conf)
 - [[ shell ] 修改网卡名称](https://github.com/weiyingjie/mytools/blob/main/change_ifname.sh)
+- [[ shell ] 启动脚本模板](https://github.com/weiyingjie/mytools/blob/main/ntop)
