@@ -1,0 +1,90 @@
+#!/bin/bash
+
+### BEGIN INIT INFO
+# Provides:          ntopng
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start daemon at boot time
+# Description:       Enable service provided by daemon.
+### END INIT INFO
+HOME="/usr/insec/flowengine"
+NTOP_PATH="$HOME/bin"
+NTOP_SHARE_PATH="$HOME/share/ntopng"
+MYSQL_PASSWD="root"
+PIDFILE="/var/run/ntopng.pid"
+CONFFILE="$HOME/ntopng.conf"
+
+start() {
+	redis-cli set ntopng.prefs.admin_password_changed 1 &> /dev/null
+	redis-cli set ntopng.user.admin.password 21232f297a57a5a743894a0e4a801fc3 &> /dev/null
+
+	if [ ! -f "$CONFFILE" ]; then
+		echo "#ntopng.conf" > $CONFFILE
+	fi
+
+	start-stop-daemon --start --background --make-pidfile --pidfile $PIDFILE --chdir $NTOP_PATH --exec ntopng -- $CONFFILE \
+		--dont-change-user \
+		-F "mysql;localhost;ntopng;flows;root;$MYSQL_PASSWD" \
+		-r 127.0.0.1
+}
+
+stop() {
+	start-stop-daemon --stop --chdir $NTOP_PATH --name ntopng --pidfile $PIDFILE
+}
+
+status() {
+	start-stop-daemon --status --chdir $NTOP_PATH --exec ntopng && exit_status=$? || exit_status=$?
+
+	case "$exit_status" in
+		0)
+			echo "Service is running."
+			;;
+		1)
+			echo "Service is not running and the pid file exists."
+			;;
+		3)
+			echo "Service is not running."
+			;;
+		4)
+			echo "Unable to determine service status."
+			;;
+	esac
+}
+
+restart() {
+	stop
+
+	start-stop-daemon --status --chdir $NTOP_PATH --exec ntopng && exit_status=$? || exit_status=$?
+	while [ $exit_status -ne 3 ]
+	do
+		start-stop-daemon --status --chdir $NTOP_PATH --exec ntopng && exit_status=$? || exit_status=$?
+	done
+
+	start
+	
+	echo "Service has been restarted"
+}
+
+case $1 in
+
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	reload|restart)
+		restart
+		;;
+	status)
+		status
+		;;
+	*)
+		echo "Usage: $0 <start|stop|reload|restart|status>"
+		exit 1
+		;;
+esac
+
+exit 0
